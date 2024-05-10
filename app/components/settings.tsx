@@ -33,14 +33,7 @@ import {
 import { ModelConfigList } from "./model-config";
 
 import { IconButton } from "./button";
-import {
-  SubmitKey,
-  useChatStore,
-  Theme,
-  useUpdateStore,
-  useAccessStore,
-  useAppConfig,
-} from "../store";
+import { SubmitKey, useChatStore, Theme, useAppConfig } from "../store";
 
 import Locale, {
   AllLangs,
@@ -50,18 +43,7 @@ import Locale, {
 } from "../locales";
 import { copyToClipboard } from "../utils";
 import Link from "next/link";
-import {
-  Anthropic,
-  Azure,
-  Google,
-  OPENAI_BASE_URL,
-  Path,
-  RELEASE_URL,
-  STORAGE_KEY,
-  ServiceProvider,
-  SlotID,
-  UPDATE_URL,
-} from "../constant";
+import { Path, STORAGE_KEY, SlotID } from "../constant";
 import { Prompt, SearchService, usePromptStore } from "../store/prompt";
 import { ErrorBoundary } from "./error";
 import { InputRange } from "./input-range";
@@ -568,72 +550,10 @@ export function Settings() {
   const config = useAppConfig();
   const updateConfig = config.update;
 
-  const updateStore = useUpdateStore();
-  const [checkingUpdate, setCheckingUpdate] = useState(false);
-  const currentVersion = updateStore.formatVersion(updateStore.version);
-  const remoteId = updateStore.formatVersion(updateStore.remoteVersion);
-  const hasNewVersion = currentVersion !== remoteId;
-  const updateUrl = getClientConfig()?.isApp ? RELEASE_URL : UPDATE_URL;
-
-  function checkUpdate(force = false) {
-    setCheckingUpdate(true);
-    updateStore.getLatestVersion(force).then(() => {
-      setCheckingUpdate(false);
-    });
-
-    console.log("[Update] local version ", updateStore.version);
-    console.log("[Update] remote version ", updateStore.remoteVersion);
-  }
-
-  const accessStore = useAccessStore();
-  const shouldHideBalanceQuery = useMemo(() => {
-    const isOpenAiUrl = accessStore.openaiUrl.includes(OPENAI_BASE_URL);
-
-    return (
-      accessStore.hideBalanceQuery ||
-      isOpenAiUrl ||
-      accessStore.provider === ServiceProvider.Azure
-    );
-  }, [
-    accessStore.hideBalanceQuery,
-    accessStore.openaiUrl,
-    accessStore.provider,
-  ]);
-
-  const usage = {
-    used: updateStore.used,
-    subscription: updateStore.subscription,
-  };
-  const [loadingUsage, setLoadingUsage] = useState(false);
-  function checkUsage(force = false) {
-    if (shouldHideBalanceQuery) {
-      return;
-    }
-
-    setLoadingUsage(true);
-    updateStore.updateUsage(force).finally(() => {
-      setLoadingUsage(false);
-    });
-  }
-
-  const enabledAccessControl = useMemo(
-    () => accessStore.enabledAccessControl(),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
-  );
-
   const promptStore = usePromptStore();
   const builtinCount = SearchService.count.builtin;
   const customCount = promptStore.getUserPrompts().length ?? 0;
   const [shouldShowPromptModal, setShowPromptModal] = useState(false);
-
-  const showUsage = accessStore.isAuthorized();
-  useEffect(() => {
-    // checks per minutes
-    checkUpdate();
-    showUsage && checkUsage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     const keydownEvent = (e: KeyboardEvent) => {
@@ -641,12 +561,6 @@ export function Settings() {
         navigate(Path.Home);
       }
     };
-    if (clientConfig?.isApp) {
-      // Force to set custom endpoint to true if it's app
-      accessStore.update((state) => {
-        state.useCustomConfig = true;
-      });
-    }
     document.addEventListener("keydown", keydownEvent);
     return () => {
       document.removeEventListener("keydown", keydownEvent);
@@ -654,12 +568,9 @@ export function Settings() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const clientConfig = useMemo(() => getClientConfig(), []);
-  const showAccessCode = enabledAccessControl && !clientConfig?.isApp;
-
   return (
     <ErrorBoundary>
-      <div className="window-header" data-tauri-drag-region>
+      <div className="window-header">
         <div className="window-header-title">
           <div className="window-header-main-title">
             {Locale.Settings.Title}
@@ -907,6 +818,7 @@ export function Settings() {
         </List>
 
         <List id={SlotID.CustomModel}>
+<<<<<<< HEAD
           {showAccessCode && (
             <ListItem
               title={Locale.Settings.Access.AccessCode.Title}
@@ -1225,6 +1137,8 @@ export function Settings() {
             </ListItem>
           ) : null}
 
+=======
+>>>>>>> 5bdd7fa (cleanup: Remove App building with Tauri)
           <ListItem
             title={Locale.Settings.Access.CustomModel.Title}
             subTitle={Locale.Settings.Access.CustomModel.SubTitle}

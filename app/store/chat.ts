@@ -10,8 +10,6 @@ import {
   DEFAULT_SYSTEM_TEMPLATE,
   KnowledgeCutOffDate,
   StoreKey,
-  SUMMARIZE_MODEL,
-  GEMINI_SUMMARIZE_MODEL,
 } from "../constant";
 import { RequestMessage, MultimodalContent } from "../client/api";
 import { ChatControllerPool } from "../client/controller";
@@ -25,8 +23,6 @@ export interface ChatToolMessage {
   toolInput?: string;
 }
 import { createPersistStore } from "../utils/store";
-import { collectModelsWithDefaultModel } from "../utils/model";
-import { useAccessStore } from "./access";
 import { webllm } from "../client/webllm";
 
 export type ChatMessage = RequestMessage & {
@@ -91,33 +87,6 @@ function createEmptySession(): ChatSession {
 
     mask: createEmptyMask(),
   };
-}
-
-function getSummarizeModel(currentModel: string) {
-  // if the current model does not exist in the default model
-  // example azure services cannot use SUMMARIZE_MODEL
-  const model = DEFAULT_MODELS.find((m) => m.name === currentModel);
-  console.log("model", model);
-  if (!model) return currentModel;
-  if (model.provider.providerType === "google") return GEMINI_SUMMARIZE_MODEL;
-  // if it is using gpt-* models, force to use 3.5 to summarize
-  if (currentModel.startsWith("gpt")) {
-    const configStore = useAppConfig.getState();
-    const accessStore = useAccessStore.getState();
-    const allModel = collectModelsWithDefaultModel(
-      configStore.models,
-      [configStore.customModels, accessStore.customModels].join(","),
-      accessStore.defaultModel,
-    );
-    const summarizeModel = allModel.find(
-      (m) => m.name === SUMMARIZE_MODEL && m.available,
-    );
-    return summarizeModel?.name ?? currentModel;
-  }
-  if (currentModel.startsWith("gemini")) {
-    return GEMINI_SUMMARIZE_MODEL;
-  }
-  return currentModel;
 }
 
 function countMessages(msgs: ChatMessage[]) {
@@ -686,7 +655,7 @@ export const useChatStore = createPersistStore(
           webllm.chat({
             messages: topicMessages,
             config: {
-              model: getSummarizeModel(session.mask.modelConfig.model),
+              model: session.mask.modelConfig.model,
               stream: false,
             },
             onFinish(message) {
@@ -749,7 +718,7 @@ export const useChatStore = createPersistStore(
             config: {
               ...modelcfg,
               stream: true,
-              model: getSummarizeModel(session.mask.modelConfig.model),
+              model: session.mask.modelConfig.model,
             },
             onUpdate(message) {
               session.memoryPrompt = message;

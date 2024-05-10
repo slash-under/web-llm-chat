@@ -1,6 +1,3 @@
-import tauriConfig from "../../src-tauri/tauri.conf.json";
-import { DEFAULT_INPUT_TEMPLATE } from "../constant";
-
 export const getBuildConfig = () => {
   if (typeof process === "undefined") {
     throw Error(
@@ -9,8 +6,7 @@ export const getBuildConfig = () => {
   }
 
   const buildMode = process.env.BUILD_MODE ?? "standalone";
-  const isApp = !!process.env.BUILD_APP;
-  const version = "v" + tauriConfig.package.version;
+  const version = "v0.1";
 
   const commitInfo = (() => {
     try {
@@ -38,8 +34,11 @@ export const getBuildConfig = () => {
     version,
     ...commitInfo,
     buildMode,
+<<<<<<< HEAD
     isApp,
     template: process.env.DEFAULT_INPUT_TEMPLATE ?? DEFAULT_INPUT_TEMPLATE,
+=======
+>>>>>>> 5bdd7fa (cleanup: Remove App building with Tauri)
   };
 };
 

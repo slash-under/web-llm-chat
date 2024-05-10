@@ -1,19 +1,9 @@
-import { availableParallelism } from "os";
+import { prebuiltAppConfig } from "@mlc-ai/web-llm";
 
-export const OWNER = "Hk-Gosuto";
-export const REPO = "ChatGPT-Next-Web-LangChain";
+export const OWNER = "mlc-ai";
+export const REPO = "web-llm";
 export const REPO_URL = `https://github.com/${OWNER}/${REPO}`;
 export const ISSUE_URL = `https://github.com/${OWNER}/${REPO}/issues`;
-export const UPDATE_URL = `${REPO_URL}#keep-updated`;
-export const RELEASE_URL = `${REPO_URL}/releases`;
-export const FETCH_COMMIT_URL = `https://api.github.com/repos/${OWNER}/${REPO}/commits?per_page=1`;
-export const FETCH_TAG_URL = `https://api.github.com/repos/${OWNER}/${REPO}/tags?per_page=1`;
-export const RUNTIME_CONFIG_DOM = "danger-runtime-config";
-
-export const DEFAULT_API_HOST = "https://api.nextchat.dev";
-export const OPENAI_BASE_URL = "https://api.openai.com";
-export const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/";
-export const ANTHROPIC_BASE_URL = "https://api.anthropic.com";
 
 export enum Path {
   Home = "/",
@@ -27,9 +17,6 @@ export enum Path {
 
 export enum ApiPath {
   Cors = "",
-  OpenAI = "/api/openai",
-  GoogleAI = "/api/google",
-  Anthropic = "/api/anthropic",
 }
 
 export enum SlotID {
@@ -70,54 +57,8 @@ export const REQUEST_TIMEOUT_MS = 60000;
 
 export const EXPORT_MESSAGE_CLASS_NAME = "export-markdown";
 
-export enum ServiceProvider {
-  OpenAI = "OpenAI",
-  Azure = "Azure",
-  Google = "Google",
-  Anthropic = "Anthropic",
-}
-
-export enum ModelProvider {
-  GPT = "GPT",
-  GeminiPro = "GeminiPro",
-  Claude = "Claude",
-  WebLLM = "WebLLM",
-}
-
-export const Anthropic = {
-  ChatPath: "v1/messages",
-  ChatPath1: "v1/complete",
-  ExampleEndpoint: "https://api.anthropic.com",
-  Vision: "2023-06-01",
-};
-
-export const OpenaiPath = {
-  ChatPath: "v1/chat/completions",
-  SpeechPath: "v1/audio/speech",
-  TranscriptionPath: "v1/audio/transcriptions",
-  UsagePath: "dashboard/billing/usage",
-  SubsPath: "dashboard/billing/subscription",
-  ListModelPath: "v1/models",
-};
-
-export const Azure = {
-  ExampleEndpoint: "https://{resource-url}/openai/deployments",
-};
-
-export const Google = {
-  ExampleEndpoint: "https://generativelanguage.googleapis.com/",
-  ChatPath: (modelName: string) => `v1beta/models/${modelName}:generateContent`,
-};
-
 export const DEFAULT_INPUT_TEMPLATE = `{{input}}`; // input / time / model / lang
-// export const DEFAULT_SYSTEM_TEMPLATE = `
-// You are ChatGPT, a large language model trained by {{ServiceProvider}}.
-// Knowledge cutoff: {{cutoff}}
-// Current model: {{model}}
-// Current time: {{time}}
-// Latex inline: $x^2$
-// Latex block: $$e=mc^2$$
-// `;
+
 export const DEFAULT_SYSTEM_TEMPLATE = `
 You are ChatGPT, a large language model trained by {{ServiceProvider}}.
 Knowledge cutoff: {{cutoff}}
@@ -126,9 +67,6 @@ Current time: {{time}}
 Latex inline: \\(x^2\\) 
 Latex block: $$e=mc^2$$
 `;
-
-export const SUMMARIZE_MODEL = "gpt-3.5-turbo";
-export const GEMINI_SUMMARIZE_MODEL = "gemini-pro";
 
 export const KnowledgeCutOffDate: Record<string, string> = {
   default: "2021-09",
@@ -202,47 +140,19 @@ export const DEFAULT_MODELS = [
       providerName: "MLC AI",
       providerType: "mlc-ai",
     },
+=======
+  default: "2023-03",
+};
+
+export const DEFAULT_MODELS = prebuiltAppConfig.model_list.map((record) => ({
+  name: record.model_id,
+  available: true,
+  provider: {
+    id: "huggingface",
+    providerName: "huggingface",
+    providerType: "huggingface",
   },
-  ...openaiModels.map((name) => ({
-    name,
-    available: true,
-    provider: {
-      id: "openai",
-      providerName: "OpenAI",
-      providerType: "openai",
-    },
-  })),
-  ...googleModels.map((name) => ({
-    name,
-    available: true,
-    provider: {
-      id: "google",
-      providerName: "Google",
-      providerType: "google",
-    },
-  })),
-  ...anthropicModels.map((name) => ({
-    name,
-    available: true,
-    provider: {
-      id: "anthropic",
-      providerName: "Anthropic",
-      providerType: "anthropic",
-    },
-  })),
-] as const;
+}));
 
 export const CHAT_PAGE_SIZE = 15;
 export const MAX_RENDER_MSG_COUNT = 45;
-
-// some famous webdav endpoints
-export const internalAllowedWebDavEndpoints = [
-  "https://dav.jianguoyun.com/dav/",
-  "https://dav.dropdav.com/",
-  "https://dav.box.com/dav",
-  "https://nanao.teracloud.jp/dav/",
-  "https://webdav.4shared.com/",
-  "https://dav.idrivesync.com",
-  "https://webdav.yandex.com",
-  "https://app.koofr.net/dav/Koofr",
-];

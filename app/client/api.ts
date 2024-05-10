@@ -1,6 +1,6 @@
 import { getClientConfig } from "../config/client";
-import { ACCESS_CODE_PREFIX, ServiceProvider } from "../constant";
-import { ModelType, useAccessStore, useChatStore } from "../store";
+import { ACCESS_CODE_PREFIX } from "../constant";
+import { ModelType, useChatStore } from "../store";
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -116,45 +116,4 @@ export abstract class ToolApi {
   abstract call(input: string): Promise<string>;
   abstract name: string;
   abstract description: string;
-}
-
-export function getHeaders() {
-  const accessStore = useAccessStore.getState();
-  let headers: Record<string, string> = {};
-  const modelConfig = useChatStore.getState().currentSession().mask.modelConfig;
-  const isGoogle = modelConfig.model.startsWith("gemini");
-  if (!ignoreHeaders && !isGoogle) {
-    headers = {
-      "Content-Type": "application/json",
-      "x-requested-with": "XMLHttpRequest",
-      Accept: "application/json",
-    };
-  }
-  const isAzure = accessStore.provider === ServiceProvider.Azure;
-  let authHeader = "Authorization";
-  const apiKey = isGoogle
-    ? accessStore.googleApiKey
-    : isAzure
-      ? accessStore.azureApiKey
-      : accessStore.openaiApiKey;
-
-  const makeBearer = (s: string) =>
-    `${isGoogle || isAzure ? "" : "Bearer "}${s.trim()}`;
-  const validString = (x: string) => x && x.length > 0;
-
-  // use user's api key first
-  if (validString(apiKey)) {
-    authHeader = isGoogle ? "x-goog-api-key" : authHeader;
-    headers[authHeader] = makeBearer(apiKey);
-    if (isAzure) headers["api-key"] = makeBearer(apiKey);
-  } else if (
-    accessStore.enabledAccessControl() &&
-    validString(accessStore.accessCode)
-  ) {
-    headers[authHeader] = makeBearer(
-      ACCESS_CODE_PREFIX + accessStore.accessCode,
-    );
-  }
-
-  return headers;
 }

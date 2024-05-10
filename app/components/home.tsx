@@ -25,9 +25,7 @@ import {
 } from "react-router-dom";
 import { SideBar } from "./sidebar";
 import { useAppConfig } from "../store/config";
-import { AuthPage } from "./auth";
 import { getClientConfig } from "../config/client";
-import { useAccessStore } from "../store";
 import { webllm } from "../client/webllm";
 
 export function Loading(props: { noLogo?: boolean }) {
@@ -103,10 +101,8 @@ function Screen() {
   const config = useAppConfig();
   const location = useLocation();
   const isHome = location.pathname === Path.Home;
-  const isAuth = location.pathname === Path.Auth;
   const isMobileScreen = useMobileScreen();
-  const shouldTightBorder =
-    getClientConfig()?.isApp || (config.tightBorder && !isMobileScreen);
+  const shouldTightBorder = config.tightBorder && !isMobileScreen;
 
   useEffect(() => {
     loadAsyncGoogleFont();
@@ -154,13 +150,8 @@ function Screen() {
         }`
       }
     >
-      {isAuth ? (
-        <>
-          <AuthPage />
-        </>
-      ) : (
-        <>
-          <SideBar className={isHome ? styles["sidebar-show"] : ""} />
+      <>
+        <SideBar className={isHome ? styles["sidebar-show"] : ""} />
 
           <div className={styles["window-content"]} id={SlotID.AppBody}>
             <Routes>
@@ -193,11 +184,6 @@ export function useLoadData() {
 export function Home() {
   useLoadData();
   useHtmlLang();
-
-  useEffect(() => {
-    console.log("[Config] got config from build time", getClientConfig());
-    useAccessStore.getState().fetch();
-  }, []);
 
   if (!useHasHydrated()) {
     return <Loading />;
