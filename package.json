@@ -91,5 +91,18 @@
     "lint-staged/yaml": "^2.2.2",
     "@langchain/core": "0.1.63"
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "browser": {
+    "fs": false,
+    "path": false,
+    "perf_hooks": false,
+    "stream": false,
+    "stream-browserify": false,
+    "constants": false,
+    "module": false,
+    "os": false,
+    "process": false,
+    "util": false,
+    "assert": false
+  }
 }
