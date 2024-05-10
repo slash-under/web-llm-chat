@@ -173,7 +173,6 @@ export function SessionConfigModel(props: { onClose: () => void }) {
             updater(mask);
             chatStore.updateCurrentSession((session) => (session.mask = mask));
           }}
-          shouldSyncFromGlobal
           extraListItems={
             session.mask.modelConfig.sendMemory ? (
               <ListItem
@@ -826,7 +825,6 @@ function _Chat() {
   // chat commands shortcuts
   const chatCommands = useChatCommand({
     new: () => chatStore.newSession(),
-    newm: () => navigate(Path.NewChat),
     prev: () => chatStore.nextSession(-1),
     next: () => chatStore.nextSession(1),
     clear: () =>
