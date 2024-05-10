@@ -9,12 +9,11 @@ import {
   DEFAULT_MODELS,
   DEFAULT_SYSTEM_TEMPLATE,
   KnowledgeCutOffDate,
-  ModelProvider,
   StoreKey,
   SUMMARIZE_MODEL,
   GEMINI_SUMMARIZE_MODEL,
 } from "../constant";
-import { ClientApi, RequestMessage, MultimodalContent } from "../client/api";
+import { RequestMessage, MultimodalContent } from "../client/api";
 import { ChatControllerPool } from "../client/controller";
 import { prettyObject } from "../utils/format";
 import { estimateTokenLength } from "../utils/token";
@@ -26,10 +25,9 @@ export interface ChatToolMessage {
   toolInput?: string;
 }
 import { createPersistStore } from "../utils/store";
-import { FileInfo } from "../client/platforms/utils";
-import { identifyDefaultClaudeModel } from "../utils/checkers";
 import { collectModelsWithDefaultModel } from "../utils/model";
 import { useAccessStore } from "./access";
+import { webllm } from "../client/webllm";
 
 export type ChatMessage = RequestMessage & {
   date: string;
@@ -458,18 +456,17 @@ export const useChatStore = createPersistStore(
 //                  botMessage.id ?? messageIndex,
 //                );
 
-        var api: ClientApi = new ClientApi();
-
-                console.error("[Chat] failed ", error);
-              },
-              onController(controller) {
-                // collect controller for stop/retry
-                ChatControllerPool.addController(
-                  session.id,
-                  botMessage.id ?? messageIndex,
-                  controller,
-                );
-              },
+        // make request
+        webllm.chat({
+          messages: sendMessages,
+          config: { ...modelConfig, stream: true },
+          onUpdate(message) {
+            botMessage.streaming = true;
+            if (message) {
+              botMessage.content = message;
+            }
+            get().updateCurrentSession((session) => {
+              session.messages = session.messages.concat();
             });
           };
           if (attachFiles && attachFiles.length > 0) {
@@ -669,8 +666,6 @@ export const useChatStore = createPersistStore(
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
-        var api: ClientApi = new ClientApi();
-
         // remove error messages if any
         const messages = session.messages;
 
@@ -688,7 +683,7 @@ export const useChatStore = createPersistStore(
               content: Locale.Store.Prompt.Topic,
             }),
           );
-          api.llm.chat({
+          webllm.chat({
             messages: topicMessages,
             config: {
               model: getSummarizeModel(session.mask.modelConfig.model),
@@ -743,7 +738,7 @@ export const useChatStore = createPersistStore(
            * this param is just shit
            **/
           const { max_tokens, ...modelcfg } = modelConfig;
-          api.llm.chat({
+          webllm.chat({
             messages: toBeSummarizedMsgs.concat(
               createMessage({
                 role: "system",
