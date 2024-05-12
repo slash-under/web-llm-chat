@@ -37,7 +37,10 @@ export enum Theme {
   Light = "light",
 }
 
-const config = getClientConfig();
+export enum CacheType {
+  Cache = "cache",
+  IndexDB = "index_db",
+}
 
 export const DEFAULT_CONFIG = {
   lastUpdate: Date.now(), // timestamp, to merge state
@@ -55,11 +58,12 @@ export const DEFAULT_CONFIG = {
 
   hideBuiltinMasks: false, // dont add builtin masks
 
+  cacheType: "cache" as CacheType,
   customModels: "",
   models: DEFAULT_MODELS as any as LLMModel[],
 
   modelConfig: {
-    model: "gpt-3.5-turbo" as ModelType,
+    model: "Llama-3-8B-Instruct-q4f32_1-1k" as ModelType,
     temperature: 0.5,
     top_p: 1,
     max_tokens: 4000,

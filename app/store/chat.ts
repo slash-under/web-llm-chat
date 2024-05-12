@@ -61,6 +61,7 @@ export interface ChatSession {
   lastUpdate: number;
   lastSummarizeIndex: number;
   clearContextIndex?: number;
+  isGenerating: boolean;
 
   mask: Mask;
 }
@@ -84,6 +85,7 @@ function createEmptySession(): ChatSession {
     },
     lastUpdate: Date.now(),
     lastSummarizeIndex: 0,
+    isGenerating: false,
 
     mask: createEmptyMask(),
   };
@@ -355,9 +357,13 @@ export const useChatStore = createPersistStore(
             ...userMessage,
             content: mContent,
           };
-          session.messages.push(savedUserMessage);
-          session.messages.push(botMessage);
+          session.messages = session.messages.concat([
+            savedUserMessage,
+            botMessage,
+          ]);
+          session.isGenerating = true;
         });
+
 //        const isEnableRAG = attachFiles && attachFiles?.length > 0;
 //        var api: ClientApi;
 //        api = new ClientApi(ModelProvider.GPT);
@@ -424,11 +430,14 @@ export const useChatStore = createPersistStore(
 //                  session.id,
 //                  botMessage.id ?? messageIndex,
 //                );
-
         // make request
         webllm.chat({
           messages: sendMessages,
-          config: { ...modelConfig, stream: true },
+          config: {
+            ...modelConfig,
+            cache: useAppConfig.getState().cacheType,
+            stream: true,
+          },
           onUpdate(message) {
             botMessage.streaming = true;
             if (message) {
@@ -437,80 +446,62 @@ export const useChatStore = createPersistStore(
             get().updateCurrentSession((session) => {
               session.messages = session.messages.concat();
             });
-          };
-          if (attachFiles && attachFiles.length > 0) {
-            await api.llm
-              .createRAGStore({
-                chatSessionId: session.id,
-                fileInfos: attachFiles,
-              })
-              .then(() => {
-                console.log("[RAG]", "Vector db created");
-                agentCall();
+          },
+          // if (attachFiles && attachFiles.length > 0) {
+          //   await api.llm
+          //     .createRAGStore({
+          //       chatSessionId: session.id,
+          //       fileInfos: attachFiles,
+          //     })
+          //     .then(() => {
+          //       console.log("[RAG]", "Vector db created");
+          //       agentCall();
+          //     });
+          // } else {
+          //   agentCall();
+          // }
+          onFinish(message) {
+            botMessage.streaming = false;
+            if (message) {
+              botMessage.content = message;
+              get().onNewMessage(botMessage);
+            }
+            get().updateCurrentSession((session) => {
+              session.isGenerating = false;
+            });
+            ChatControllerPool.remove(session.id, botMessage.id);
+          },
+          onError(error) {
+            const isAborted = error.message.includes("aborted");
+            botMessage.content +=
+              "\n\n" +
+              prettyObject({
+                error: true,
+                message: error.message,
               });
-          } else {
-            agentCall();
-          }
-        } else {
-          if (modelConfig.model.startsWith("gemini")) {
-            api = new ClientApi(ModelProvider.GeminiPro);
-          } else if (identifyDefaultClaudeModel(modelConfig.model)) {
-            api = new ClientApi(ModelProvider.Claude);
-          } else {
-            api = new ClientApi(ModelProvider.GPT);
-          }
-          // make request
-          api.llm.chat({
-            messages: sendMessages,
-            config: { ...modelConfig, stream: true },
-            onUpdate(message) {
-              botMessage.streaming = true;
-              if (message) {
-                botMessage.content = message;
-              }
-              get().updateCurrentSession((session) => {
-                session.messages = session.messages.concat();
-              });
-            },
-            onFinish(message) {
-              botMessage.streaming = false;
-              if (message) {
-                botMessage.content = message;
-                get().onNewMessage(botMessage);
-              }
-              ChatControllerPool.remove(session.id, botMessage.id);
-            },
-            onError(error) {
-              const isAborted = error.message.includes("aborted");
-              botMessage.content +=
-                "\n\n" +
-                prettyObject({
-                  error: true,
-                  message: error.message,
-                });
-              botMessage.streaming = false;
-              userMessage.isError = !isAborted;
-              botMessage.isError = !isAborted;
-              get().updateCurrentSession((session) => {
-                session.messages = session.messages.concat();
-              });
-              ChatControllerPool.remove(
-                session.id,
-                botMessage.id ?? messageIndex,
-              );
+            botMessage.streaming = false;
+            userMessage.isError = !isAborted;
+            botMessage.isError = !isAborted;
+            get().updateCurrentSession((session) => {
+              session.messages = session.messages.concat();
+              session.isGenerating = false;
+            });
+            ChatControllerPool.remove(
+              session.id,
+              botMessage.id ?? messageIndex,
+            );
 
-              console.error("[Chat] failed ", error);
-            },
-            onController(controller) {
-              // collect controller for stop/retry
-              ChatControllerPool.addController(
-                session.id,
-                botMessage.id ?? messageIndex,
-                controller,
-              );
-            },
-          });
-        }
+            console.error("[Chat] failed ", error);
+          },
+          onController(controller) {
+            // collect controller for stop/retry
+            ChatControllerPool.addController(
+              session.id,
+              botMessage.id ?? messageIndex,
+              controller,
+            );
+          },
+        });
       },
 
       getMemoryPrompt() {
@@ -656,6 +647,7 @@ export const useChatStore = createPersistStore(
             messages: topicMessages,
             config: {
               model: session.mask.modelConfig.model,
+              cache: useAppConfig.getState().cacheType,
               stream: false,
             },
             onFinish(message) {
@@ -719,6 +711,7 @@ export const useChatStore = createPersistStore(
               ...modelcfg,
               stream: true,
               model: session.mask.modelConfig.model,
+              cache: useAppConfig.getState().cacheType,
             },
             onUpdate(message) {
               session.memoryPrompt = message;

@@ -1,6 +1,6 @@
 import { getClientConfig } from "../config/client";
 import { ACCESS_CODE_PREFIX } from "../constant";
-import { ModelType, useChatStore } from "../store";
+import { CacheType, ModelType, useChatStore } from "../store";
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -24,6 +24,7 @@ export interface RequestMessage {
 
 export interface LLMConfig {
   model: string;
+  cache: CacheType;
   temperature?: number;
   top_p?: number;
   stream?: boolean;
@@ -110,6 +111,7 @@ export abstract class LLMApi {
   abstract createRAGStore(options: CreateRAGStoreOptions): Promise<void>;
   abstract usage(): Promise<LLMUsage>;
   abstract models(): Promise<LLMModel[]>;
+  abstract clear(): void;
 }
 
 export abstract class ToolApi {

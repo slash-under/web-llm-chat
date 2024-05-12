@@ -763,14 +763,13 @@ function _Chat() {
   const config = useAppConfig();
   const fontSize = config.fontSize;
 
-  const currentModel = chatStore.currentSession().mask.modelConfig.model;
+  const isGenerating = session.isGenerating;
 
   const [showExport, setShowExport] = useState(false);
 
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const { submitKey, shouldSubmit } = useSubmitHandler();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isScrolledToBottom = scrollRef?.current
@@ -868,18 +867,8 @@ function _Chat() {
 
     if (isGenerating) return;
     setIsLoading(true);
-    setIsGenerating(true);
     chatStore
-      .onUserInput(
-        userInput,
-        attachImages,
-        () => {
-          setIsGenerating(true);
-        },
-        () => {
-          setIsGenerating(false);
-        },
-      )
+      .onUserInput(userInput, attachImages)
       .then(() => setIsLoading(false));
     setAttachImages([]);
     setAttachFiles([]);
@@ -1042,18 +1031,7 @@ function _Chat() {
     setIsLoading(true);
     const textContent = getMessageTextContent(userMessage);
     const images = getMessageImages(userMessage);
-    chatStore
-      .onUserInput(
-        textContent,
-        images,
-        () => {
-          setIsGenerating(true);
-        },
-        () => {
-          setIsGenerating(false);
-        },
-      )
-      .then(() => setIsLoading(false));
+    chatStore.onUserInput(textContent, images).then(() => setIsLoading(false));
     inputRef.current?.focus();
   };
 
