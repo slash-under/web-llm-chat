@@ -770,6 +770,7 @@ function _Chat() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const { submitKey, shouldSubmit } = useSubmitHandler();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isScrolledToBottom = scrollRef?.current
@@ -854,35 +855,9 @@ function _Chat() {
     }
   };
 
-  const [isListening, setIsListening] = useState(false);
-  const [isTranscription, setIsTranscription] = useState(false);
-  const [speechApi, setSpeechApi] = useState<any>(null);
-
-  const startListening = async () => {
-    if (speechApi) {
-      await speechApi.start();
-      setIsListening(true);
-    }
-  };
-
-  const stopListening = async () => {
-    if (speechApi) {
-      if (config.sttConfig.engine !== DEFAULT_STT_ENGINE)
-        setIsTranscription(true);
-      await speechApi.stop();
-      setIsListening(false);
-    }
-  };
-
-  const onRecognitionEnd = (finalTranscript: string) => {
-    console.log(finalTranscript);
-    if (finalTranscript) setUserInput(finalTranscript);
-    if (config.sttConfig.engine !== DEFAULT_STT_ENGINE)
-      setIsTranscription(false);
-  };
-
   const doSubmit = (userInput: string) => {
     if (userInput.trim() === "") return;
+
     const matchCommand = chatCommands.match(userInput);
     if (matchCommand.matched) {
       setUserInput("");
@@ -890,9 +865,21 @@ function _Chat() {
       matchCommand.invoke();
       return;
     }
+
+    if (isGenerating) return;
     setIsLoading(true);
+    setIsGenerating(true);
     chatStore
-      .onUserInput(userInput, attachImages, attachFiles)
+      .onUserInput(
+        userInput,
+        attachImages,
+        () => {
+          setIsGenerating(true);
+        },
+        () => {
+          setIsGenerating(false);
+        },
+      )
       .then(() => setIsLoading(false));
     setAttachImages([]);
     setAttachFiles([]);
@@ -1056,7 +1043,16 @@ function _Chat() {
     const textContent = getMessageTextContent(userMessage);
     const images = getMessageImages(userMessage);
     chatStore
-      .onUserInput(textContent, images, userMessage.fileInfos)
+      .onUserInput(
+        textContent,
+        images,
+        () => {
+          setIsGenerating(true);
+        },
+        () => {
+          setIsGenerating(false);
+        },
+      )
       .then(() => setIsLoading(false));
     inputRef.current?.focus();
   };
@@ -1787,54 +1783,15 @@ function _Chat() {
               })}
             </div>
           )}
-          {attachFiles.length != 0 && (
-            <div className={styles["attach-files"]}>
-              {attachFiles.map((file, index) => {
-                return (
-                  <div
-                    key={index}
-                    className={styles["attach-file"]}
-                    title={file.originalFilename}
-                  >
-                    <div className={styles["attach-file-info"]}>
-                      {file.originalFilename}
-                    </div>
-                    <div className={styles["attach-file-mask"]}>
-                      <DeleteFileButton
-                        deleteFile={() => {
-                          setAttachFiles(
-                            attachFiles.filter((_, i) => i !== index),
-                          );
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          {config.sttConfig.enable ? (
-            <IconButton
-              icon={<VoiceWhiteIcon />}
-              text={
-                isListening ? Locale.Chat.StopSpeak : Locale.Chat.StartSpeak
-              }
-              className={styles["chat-input-send"]}
-              type="primary"
-              onClick={async () =>
-                isListening ? await stopListening() : await startListening()
-              }
-              loding={isTranscription}
-            />
-          ) : (
-            <IconButton
-              icon={<SendWhiteIcon />}
-              text={Locale.Chat.Send}
-              className={styles["chat-input-send"]}
-              type="primary"
-              onClick={() => doSubmit(userInput)}
-            />
-          )}
+
+          <IconButton
+            icon={<SendWhiteIcon />}
+            text={Locale.Chat.Send}
+            className={styles["chat-input-send"]}
+            type="primary"
+            onClick={() => doSubmit(userInput)}
+            disabled={isGenerating}
+          />
         </label>
       </div>
 
