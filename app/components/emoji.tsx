@@ -45,7 +45,7 @@ export function Avatar(props: { model?: ModelType; avatar?: string }) {
   }
   if (props.model) {
     return (
-      <div className="bot-avatar no-dark">
+      <div className="bot-avatar mlc-icon no-dark">
         <MlcIcon />
       </div>
     );
