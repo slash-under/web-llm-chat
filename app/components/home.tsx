@@ -78,6 +78,18 @@ const useHasHydrated = () => {
   return hasHydrated;
 };
 
+const useServiceWorkerReady = () => {
+  const [serviceWorkerReady, setServiceWorkerReady] = useState<boolean>(false);
+
+  useEffect(() => {
+    navigator.serviceWorker.ready.then(() => {
+      setServiceWorkerReady(true);
+    });
+  }, []);
+
+  return serviceWorkerReady;
+};
+
 const loadAsyncGoogleFont = () => {
   const linkEl = document.createElement("link");
   const proxyFontUrl = "/google-fonts";
@@ -180,8 +192,10 @@ export function useLoadData() {
 export function Home() {
   useLoadData();
   useHtmlLang();
+  const hasHydrated = useHasHydrated();
+  const isServiceWorkerReady = useServiceWorkerReady();
 
-  if (!useHasHydrated()) {
+  if (!hasHydrated || !isServiceWorkerReady) {
     return <Loading />;
   }
 
