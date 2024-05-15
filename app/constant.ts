@@ -1,3 +1,5 @@
+import { availableParallelism } from "os";
+
 export const OWNER = "Hk-Gosuto";
 export const REPO = "ChatGPT-Next-Web-LangChain";
 export const REPO_URL = `https://github.com/${OWNER}/${REPO}`;
@@ -79,6 +81,7 @@ export enum ModelProvider {
   GPT = "GPT",
   GeminiPro = "GeminiPro",
   Claude = "Claude",
+  WebLLM = "WebLLM",
 }
 
 export const Anthropic = {
@@ -191,6 +194,15 @@ const anthropicModels = [
 ];
 
 export const DEFAULT_MODELS = [
+  {
+    name: "Web LLM",
+    available: true,
+    provider: {
+      id: "mlc-ai",
+      providerName: "MLC AI",
+      providerType: "mlc-ai",
+    },
+  },
   ...openaiModels.map((name) => ({
     name,
     available: true,

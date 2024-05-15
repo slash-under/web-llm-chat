@@ -391,72 +391,74 @@ export const useChatStore = createPersistStore(
           session.messages.push(savedUserMessage);
           session.messages.push(botMessage);
         });
-        const isEnableRAG = attachFiles && attachFiles?.length > 0;
-        var api: ClientApi;
-        api = new ClientApi(ModelProvider.GPT);
-        if (
-          config.pluginConfig.enable &&
-          session.mask.usePlugins &&
-          (allPlugins.length > 0 || isEnableRAG) &&
-          modelConfig.model.startsWith("gpt") &&
-          modelConfig.model != "gpt-4-vision-preview"
-        ) {
-          console.log("[ToolAgent] start");
-          const pluginToolNames = allPlugins.map((m) => m.toolName);
-          if (isEnableRAG) pluginToolNames.push("rag-search");
-          const agentCall = () => {
-            api.llm.toolAgentChat({
-              chatSessionId: session.id,
-              messages: sendMessages,
-              config: { ...modelConfig, stream: true },
-              agentConfig: { ...pluginConfig, useTools: pluginToolNames },
-              onUpdate(message) {
-                botMessage.streaming = true;
-                if (message) {
-                  botMessage.content = message;
-                }
-                get().updateCurrentSession((session) => {
-                  session.messages = session.messages.concat();
-                });
-              },
-              onToolUpdate(toolName, toolInput) {
-                botMessage.streaming = true;
-                if (toolName && toolInput) {
-                  botMessage.toolMessages!.push({
-                    toolName,
-                    toolInput,
-                  });
-                }
-                get().updateCurrentSession((session) => {
-                  session.messages = session.messages.concat();
-                });
-              },
-              onFinish(message) {
-                botMessage.streaming = false;
-                if (message) {
-                  botMessage.content = message;
-                  get().onNewMessage(botMessage);
-                }
-                ChatControllerPool.remove(session.id, botMessage.id);
-              },
-              onError(error) {
-                const isAborted = error.message.includes("aborted");
-                botMessage.content +=
-                  "\n\n" +
-                  prettyObject({
-                    error: true,
-                    message: error.message,
-                  });
-                botMessage.streaming = false;
-                userMessage.isError = !isAborted;
-                botMessage.isError = !isAborted;
-                get().updateCurrentSession((session) => {
-                  session.messages = session.messages.concat();
-                });
-                ChatControllerPool.remove(
-                  session.id,
-                  botMessage.id ?? messageIndex,
-                );
+//        const isEnableRAG = attachFiles && attachFiles?.length > 0;
+//        var api: ClientApi;
+//        api = new ClientApi(ModelProvider.GPT);
+//        if (
+//          config.pluginConfig.enable &&
+//          session.mask.usePlugins &&
+//          (allPlugins.length > 0 || isEnableRAG) &&
+//          modelConfig.model.startsWith("gpt") &&
+//          modelConfig.model != "gpt-4-vision-preview"
+//        ) {
+//          console.log("[ToolAgent] start");
+//          const pluginToolNames = allPlugins.map((m) => m.toolName);
+//          if (isEnableRAG) pluginToolNames.push("rag-search");
+//          const agentCall = () => {
+//            api.llm.toolAgentChat({
+//              chatSessionId: session.id,
+//              messages: sendMessages,
+//              config: { ...modelConfig, stream: true },
+//              agentConfig: { ...pluginConfig, useTools: pluginToolNames },
+//              onUpdate(message) {
+//                botMessage.streaming = true;
+//                if (message) {
+//                  botMessage.content = message;
+//                }
+//                get().updateCurrentSession((session) => {
+//                  session.messages = session.messages.concat();
+//                });
+//              },
+//              onToolUpdate(toolName, toolInput) {
+//                botMessage.streaming = true;
+//                if (toolName && toolInput) {
+//                  botMessage.toolMessages!.push({
+//                    toolName,
+//                    toolInput,
+//                  });
+//                }
+//                get().updateCurrentSession((session) => {
+//                  session.messages = session.messages.concat();
+//                });
+//              },
+//              onFinish(message) {
+//                botMessage.streaming = false;
+//                if (message) {
+//                  botMessage.content = message;
+//                  get().onNewMessage(botMessage);
+//                }
+//                ChatControllerPool.remove(session.id, botMessage.id);
+//              },
+//              onError(error) {
+//                const isAborted = error.message.includes("aborted");
+//                botMessage.content +=
+//                  "\n\n" +
+//                  prettyObject({
+//                    error: true,
+//                    message: error.message,
+//                  });
+//                botMessage.streaming = false;
+//                userMessage.isError = !isAborted;
+//                botMessage.isError = !isAborted;
+//                get().updateCurrentSession((session) => {
+//                  session.messages = session.messages.concat();
+//                });
+//                ChatControllerPool.remove(
+//                  session.id,
+//                  botMessage.id ?? messageIndex,
+//                );
+
+        var api: ClientApi = new ClientApi();
 
                 console.error("[Chat] failed ", error);
               },
@@ -667,14 +669,7 @@ export const useChatStore = createPersistStore(
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
-        var api: ClientApi;
-        if (modelConfig.model.startsWith("gemini")) {
-          api = new ClientApi(ModelProvider.GeminiPro);
-        } else if (identifyDefaultClaudeModel(modelConfig.model)) {
-          api = new ClientApi(ModelProvider.Claude);
-        } else {
-          api = new ClientApi(ModelProvider.GPT);
-        }
+        var api: ClientApi = new ClientApi();
 
         // remove error messages if any
         const messages = session.messages;

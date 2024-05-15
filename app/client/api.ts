@@ -6,10 +6,7 @@ import {
   ServiceProvider,
 } from "../constant";
 import { ChatMessage, ModelType, useAccessStore, useChatStore } from "../store";
-import { ChatGPTApi } from "./platforms/openai";
-import { FileApi, FileInfo } from "./platforms/utils";
-import { GeminiProApi } from "./platforms/google";
-import { ClaudeApi } from "./platforms/anthropic";
+import { WebLLMApi } from "./webllm";
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -152,17 +149,8 @@ export class ClientApi {
   public llm: LLMApi;
   public file: FileApi;
 
-  constructor(provider: ModelProvider = ModelProvider.GPT) {
-    switch (provider) {
-      case ModelProvider.GeminiPro:
-        this.llm = new GeminiProApi();
-        break;
-      case ModelProvider.Claude:
-        this.llm = new ClaudeApi();
-        break;
-      default:
-        this.llm = new ChatGPTApi();
-    }
+  constructor() {
+    this.llm = new WebLLMApi();
     this.file = new FileApi();
   }
 
