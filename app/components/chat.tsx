@@ -496,10 +496,6 @@ export function ChatActions(props: {
     config.update((config) => (config.theme = nextTheme));
   }
 
-  // stop all responses
-  const couldStop = ChatControllerPool.hasPending();
-  const stopAll = () => ChatControllerPool.stopAll();
-
   // switch model
   const currentModel = chatStore.currentSession().mask.modelConfig.model;
   const allModels = useAllModels();
@@ -765,7 +761,7 @@ function _Chat() {
   const config = useAppConfig();
   const fontSize = config.fontSize;
 
-  const isGenerating = session.isGenerating;
+  const isStreaming = session.messages.some((m) => m.streaming);
 
   const [showExport, setShowExport] = useState(false);
 
@@ -869,7 +865,7 @@ function _Chat() {
       return;
     }
 
-    if (isGenerating) return;
+    if (isStreaming) return;
     setIsLoading(true);
     chatStore
       .onUserInput(userInput, webllm!, attachImages)
@@ -901,8 +897,8 @@ function _Chat() {
   };
 
   // stop response
-  const onUserStop = (messageId: string) => {
-    ChatControllerPool.stop(session.id, messageId);
+  const onUserStop = () => {
+    webllm?.abort();
   };
 
   // Reset session status on initial loading
@@ -1539,7 +1535,7 @@ function _Chat() {
                               <ChatAction
                                 text={Locale.Chat.Actions.Stop}
                                 icon={<StopIcon />}
-                                onClick={() => onUserStop(message.id ?? i)}
+                                onClick={() => onUserStop()}
                               />
                             ) : (
                               <>
@@ -1779,15 +1775,23 @@ function _Chat() {
               })}
             </div>
           )}
-
-          <IconButton
-            icon={<SendWhiteIcon />}
-            text={Locale.Chat.Send}
-            className={styles["chat-input-send"]}
-            type="primary"
-            onClick={() => doSubmit(userInput)}
-            disabled={isGenerating}
-          />
+          {isStreaming ? (
+            <IconButton
+              icon={<StopIcon />}
+              text={Locale.Chat.InputActions.Stop}
+              className={styles["chat-input-send"]}
+              type="primary"
+              onClick={() => onUserStop()}
+            />
+          ) : (
+            <IconButton
+              icon={<SendWhiteIcon />}
+              text={Locale.Chat.Send}
+              className={styles["chat-input-send"]}
+              type="primary"
+              onClick={() => doSubmit(userInput)}
+            />
+          )}
         </label>
       </div>
 
