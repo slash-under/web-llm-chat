@@ -7,6 +7,7 @@ import React, {
   useCallback,
   Fragment,
   RefObject,
+  useContext,
 } from "react";
 
 import SendWhiteIcon from "../icons/send-white.svg";
@@ -97,7 +98,7 @@ import {
   DEFAULT_TTS_ENGINE,
   FIREFOX_DEFAULT_STT_ENGINE,
   LAST_INPUT_KEY,
-  ModelProvider,
+  // ModelProvider,
   Path,
   REQUEST_TIMEOUT_MS,
   UNFINISHED_INPUT,
@@ -110,7 +111,7 @@ import { prettyObject } from "../utils/format";
 import { ExportMessageModal } from "./exporter";
 import { getClientConfig } from "../config/client";
 import { useAllModels } from "../utils/hooks";
-import { ClientApi } from "../client/api";
+// import { ClientApi } from "../client/api";
 import { createTTSPlayer } from "../utils/audio";
 import { MultimodalContent } from "../client/api";
 import {
@@ -119,7 +120,8 @@ import {
   WebTranscriptionApi,
 } from "../utils/speech";
 import { FileInfo } from "../client/platforms/utils";
-import { MsEdgeTTS, OUTPUT_FORMAT } from "../utils/ms_edge_tts";
+
+import { WebLLMApi, WebLLMContext } from "../client/webllm";
 
 const ttsPlayer = createTTSPlayer();
 
@@ -789,6 +791,8 @@ function _Chat() {
   const [uploading, setUploading] = useState(false);
   const [attachFiles, setAttachFiles] = useState<FileInfo[]>([]);
 
+  const webllm = useContext(WebLLMContext);
+
   // prompt hints
   const promptStore = usePromptStore();
   const [promptHints, setPromptHints] = useState<RenderPompt[]>([]);
@@ -868,7 +872,7 @@ function _Chat() {
     if (isGenerating) return;
     setIsLoading(true);
     chatStore
-      .onUserInput(userInput, attachImages)
+      .onUserInput(userInput, webllm!, attachImages)
       .then(() => setIsLoading(false));
     setAttachImages([]);
     setAttachFiles([]);
@@ -1036,7 +1040,9 @@ function _Chat() {
     setIsLoading(true);
     const textContent = getMessageTextContent(userMessage);
     const images = getMessageImages(userMessage);
-    chatStore.onUserInput(textContent, images).then(() => setIsLoading(false));
+    chatStore
+      .onUserInput(textContent, webllm!, images)
+      .then(() => setIsLoading(false));
     inputRef.current?.focus();
   };
 

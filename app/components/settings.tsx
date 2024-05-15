@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useContext } from "react";
 
 import styles from "./settings.module.scss";
 
@@ -45,7 +45,7 @@ import { Avatar, AvatarPicker } from "./emoji";
 import { nanoid } from "nanoid";
 import { PluginConfigList } from "./plugin-config";
 import { TTSConfigList } from "./tts-config";
-import { webllm } from "../client/webllm";
+import { WebLLMContext } from "../client/webllm";
 
 function EditPromptModal(props: { id: string; onClose: () => void }) {
   const promptStore = usePromptStore();
@@ -249,6 +249,7 @@ export function Settings() {
   const builtinCount = SearchService.count.builtin;
   const customCount = promptStore.getUserPrompts().length ?? 0;
   const [shouldShowPromptModal, setShowPromptModal] = useState(false);
+  const webllm = useContext(WebLLMContext);
 
   useEffect(() => {
     const keydownEvent = (e: KeyboardEvent) => {
@@ -502,7 +503,7 @@ export function Settings() {
             <Select
               value="cache"
               onChange={(e) => {
-                webllm.clear();
+                webllm?.clear();
                 updateConfig(
                   (config) =>
                     (config.cacheType = e.currentTarget
