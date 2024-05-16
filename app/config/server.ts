@@ -1,5 +1,4 @@
 import md5 from "spark-md5";
-import { DEFAULT_MODELS } from "../constant";
 
 declare global {
   namespace NodeJS {
