@@ -108,9 +108,7 @@ export abstract class LLMApi {
   abstract toolAgentChat(options: AgentChatOptions): Promise<void>;
   abstract createRAGStore(options: CreateRAGStoreOptions): Promise<void>;
   abstract usage(): Promise<LLMUsage>;
-  abstract models(): Promise<LLMModel[]>;
   abstract abort(): Promise<void>;
-  abstract clear(): void;
 }
 
 export abstract class ToolApi {

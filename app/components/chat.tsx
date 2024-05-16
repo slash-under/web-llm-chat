@@ -121,7 +121,7 @@ import {
 } from "../utils/speech";
 import { FileInfo } from "../client/platforms/utils";
 
-import { WebLLMApi, WebLLMContext } from "../client/webllm";
+import { WebLLMContext } from "../client/webllm";
 
 const ttsPlayer = createTTSPlayer();
 
@@ -786,8 +786,7 @@ function _Chat() {
   const [attachImages, setAttachImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [attachFiles, setAttachFiles] = useState<FileInfo[]>([]);
-
-  const webllm = useContext(WebLLMContext);
+  const webllm = useContext(WebLLMContext)!;
 
   // prompt hints
   const promptStore = usePromptStore();
@@ -868,7 +867,7 @@ function _Chat() {
     if (isStreaming) return;
     setIsLoading(true);
     chatStore
-      .onUserInput(userInput, webllm!, attachImages)
+      .onUserInput(userInput, webllm, attachImages)
       .then(() => setIsLoading(false));
     setAttachImages([]);
     setAttachFiles([]);
@@ -1037,7 +1036,7 @@ function _Chat() {
     const textContent = getMessageTextContent(userMessage);
     const images = getMessageImages(userMessage);
     chatStore
-      .onUserInput(textContent, webllm!, images)
+      .onUserInput(textContent, webllm, images)
       .then(() => setIsLoading(false));
     inputRef.current?.focus();
   };
