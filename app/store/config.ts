@@ -63,7 +63,7 @@ export const DEFAULT_CONFIG = {
   models: DEFAULT_MODELS as any as LLMModel[],
 
   modelConfig: {
-    model: "Llama-3-8B-Instruct-q4f32_1-1k" as ModelType,
+    model: DEFAULT_MODELS[0].name,
     temperature: 0.5,
     top_p: 1,
     max_tokens: 4000,
@@ -72,7 +72,7 @@ export const DEFAULT_CONFIG = {
     sendMemory: true,
     historyMessageCount: 4,
     compressMessageLengthThreshold: 1000,
-    enableInjectSystemPrompts: true,
+    enableInjectSystemPrompts: false,
     template: config?.template ?? DEFAULT_INPUT_TEMPLATE,
   },
 
@@ -175,12 +175,10 @@ export const useAppConfig = createPersistStore(
       const modelMap: Record<string, LLMModel> = {};
 
       for (const model of oldModels) {
-        model.available = false;
         modelMap[model.name] = model;
       }
 
       for (const model of newModels) {
-        model.available = true;
         modelMap[model.name] = model;
       }
 
