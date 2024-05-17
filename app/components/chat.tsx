@@ -368,6 +368,7 @@ function ChatAction(props: {
   loding?: boolean;
   innerNode?: JSX.Element;
   onClick: () => void;
+  fullWidth?: boolean;
   style?: React.CSSProperties;
 }) {
   const iconRef = useRef<HTMLDivElement>(null);
@@ -388,7 +389,19 @@ function ChatAction(props: {
     });
   }
 
-  return (
+  return props.fullWidth ? (
+    <div
+      className={`${styles["chat-input-action"]} clickable ${styles["full-width"]}`}
+      onClick={props.onClick}
+    >
+      <div ref={iconRef} className={styles["icon"]}>
+        {props.icon}
+      </div>
+      <div className={styles["text"]} ref={textRef}>
+        {props.text}
+      </div>
+    </div>
+  ) : (
     <div
       className={`${styles["chat-input-action"]} clickable`}
       onClick={() => {
@@ -607,19 +620,35 @@ export function ChatActions(props: {
           icon={<PromptIcon />}
         />
 
-        <ChatAction
-          onClick={() => {
-            navigate(Path.Masks);
-          }}
-          text={Locale.Chat.InputActions.Masks}
-          icon={<MaskIcon />}
-        />
+      <ChatAction
+        onClick={() => {
+          navigate(Path.Masks);
+        }}
+        text={Locale.Chat.InputActions.Masks}
+        icon={<MaskIcon />}
+      />
 
-        <ChatAction
-          onClick={() => setShowModelSelector(true)}
-          text={currentModel}
-          icon={<RobotIcon />}
-        />
+      <ChatAction
+        text={Locale.Chat.InputActions.Clear}
+        icon={<BreakIcon />}
+        onClick={() => {
+          chatStore.updateCurrentSession((session) => {
+            if (session.clearContextIndex === session.messages.length) {
+              session.clearContextIndex = undefined;
+            } else {
+              session.clearContextIndex = session.messages.length;
+              session.memoryPrompt = ""; // will clear memory
+            }
+          });
+        }}
+      />
+
+      <ChatAction
+        onClick={() => setShowModelSelector(true)}
+        text={currentModel}
+        icon={<RobotIcon />}
+        fullWidth
+      />
 
         {config.pluginConfig.enable &&
           /^gpt(?!.*03\d{2}$).*$/.test(currentModel) &&
