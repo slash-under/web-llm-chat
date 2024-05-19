@@ -664,42 +664,41 @@ export function ChatActions(props: {
             />
           )}
 
-        {showModelSelector && (
-          <Selector
-            defaultSelectedValue={currentModel}
-            items={models.map((m) => ({
-              title: m.display_name,
-              value: m.name,
-            }))}
-            onClose={() => setShowModelSelector(false)}
-            onSelection={(s) => {
-              if (s.length === 0) return;
-              chatStore.updateCurrentSession((session) => {
-                session.mask.modelConfig.model = s[0] as ModelType;
-                session.mask.syncGlobalConfig = false;
-              });
-              showToast(s[0]);
-            }}
-          />
-        )}
-      </div>
-      <div>
-        <ChatAction
-          text={Locale.Chat.InputActions.Clear}
-          icon={<BreakIcon />}
-          onClick={() => {
-            chatStore.updateCurrentSession((session) => {
-              if (session.clearContextIndex === session.messages.length) {
-                session.clearContextIndex = undefined;
-              } else {
-                session.clearContextIndex = session.messages.length;
-                session.memoryPrompt = ""; // will clear memory
+        {config.pluginConfig.enable &&
+          /^gpt(?!.*03\d{2}$).*$/.test(currentModel) &&
+          currentModel != "gpt-4-vision-preview" && (
+            <ChatAction
+              onClick={switchUsePlugins}
+              text={
+                usePlugins
+                  ? Locale.Chat.InputActions.DisablePlugins
+                  : Locale.Chat.InputActions.EnablePlugins
               }
+              icon={usePlugins ? <EnablePluginIcon /> : <DisablePluginIcon />}
+            />
+          )}
+
+      {showModelSelector && (
+        <Selector
+          defaultSelectedValue={currentModel}
+          items={models.map((m) => ({
+            title: m.display_name,
+            value: m.name,
+          }))}
+          onClose={() => setShowModelSelector(false)}
+          onSelection={(s) => {
+            if (s.length === 0) return;
+            chatStore.updateCurrentSession((session) => {
+              session.mask.modelConfig.model = s[0] as ModelType;
+              session.mask.syncGlobalConfig = false;
             });
+            config.updateModelConfig({ model: s[0] as ModelType });
+            showToast(s[0]);
           }}
         />
-      </div>
+      )}
     </div>
+  </div>
   );
 }
 
