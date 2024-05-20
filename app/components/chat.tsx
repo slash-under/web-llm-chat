@@ -1314,7 +1314,7 @@ function _Chat() {
           const shouldShowClearContextDivider = i === clearContextIndex - 1;
 
           return (
-            <Fragment key={message.id}>
+            <Fragment key={`${i}/${message.id}`}>
               <div
                 className={
                   isUser ? styles["chat-message-user"] : styles["chat-message"]
