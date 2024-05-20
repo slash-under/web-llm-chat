@@ -28,7 +28,6 @@ import BrainIcon from "../icons/brain.svg";
 import MinIcon from "../icons/min.svg";
 import ResetIcon from "../icons/reload.svg";
 import BreakIcon from "../icons/break.svg";
-import SettingsIcon from "../icons/chat-settings.svg";
 import DeleteIcon from "../icons/clear.svg";
 import CloseIcon from "../icons/close.svg";
 import PinIcon from "../icons/pin.svg";
@@ -489,7 +488,6 @@ export function ChatActions(props: {
   uploadFile: () => void;
   setAttachFiles: (files: FileInfo[]) => void;
   setUploading: (uploading: boolean) => void;
-  showPromptModal: () => void;
   scrollToBottom: () => void;
   showPromptHints: () => void;
   hitBottom: boolean;
@@ -555,11 +553,6 @@ export function ChatActions(props: {
 
   return (
     <div className={styles["chat-input-actions"]}>
-      <ChatAction
-        onClick={props.showPromptModal}
-        text={Locale.Chat.InputActions.Settings}
-        icon={<SettingsIcon />}
-      />
       {showUploadImage && (
         <ChatAction
           onClick={props.uploadImage}
@@ -1162,10 +1155,6 @@ function _Chat() {
       ? session.clearContextIndex! + context.length - msgRenderIndex
       : -1;
 
-  const [showPromptModal, setShowPromptModal] = useState(false);
-
-  const clientConfig = useMemo(() => getClientConfig(), []);
-
   const autoFocus = !isMobileScreen; // wont auto focus on mobile screen
   const showMaxIcon = !isMobileScreen;
 
@@ -1415,12 +1404,6 @@ function _Chat() {
               />
             </div>
           )}
-
-          <PromptToast
-            showToast={!hitBottom}
-            showModal={showPromptModal}
-            setShowModal={setShowPromptModal}
-          />
         </div>
       </div>
 
@@ -1538,11 +1521,6 @@ function _Chat() {
                                   onClick={() => onDelete(message.id ?? i)}
                                 />
 
-                                <ChatAction
-                                  text={Locale.Chat.Actions.Pin}
-                                  icon={<PinIcon />}
-                                  onClick={() => onPinMessage(message)}
-                                />
                                 <ChatAction
                                   text={Locale.Chat.Actions.Copy}
                                   icon={<CopyIcon />}
@@ -1698,7 +1676,6 @@ function _Chat() {
           uploadFile={uploadFile}
           setAttachFiles={setAttachFiles}
           setUploading={setUploading}
-          showPromptModal={() => setShowPromptModal(true)}
           scrollToBottom={scrollToBottom}
           hitBottom={hitBottom}
           uploading={uploading}
