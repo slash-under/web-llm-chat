@@ -534,7 +534,6 @@ export function ChatActions(props: {
           });
         }}
       />
-
       <ChatAction
         onClick={() => setShowModelSelector(true)}
         text={currentModel}
@@ -574,7 +573,7 @@ export function ChatActions(props: {
         <Selector
           defaultSelectedValue={currentModel}
           items={models.map((m) => ({
-            title: m.display_name,
+            title: m.name,
             value: m.name,
           }))}
           onClose={() => setShowModelSelector(false)}
@@ -1392,7 +1391,17 @@ function _Chat() {
                     >
                       {!isUser && (
                         <div className={styles["chat-message-model-name"]}>
-                          {message.model}
+                          {config.models.find((m) => m.name === message.model)
+                            ? `${
+                                config.models.find(
+                                  (m) => m.name === message.model,
+                                )!.display_name
+                              } ${
+                                config.models.find(
+                                  (m) => m.name === message.model,
+                                )?.size || ""
+                              }`
+                            : message.model}
                         </div>
                       )}
                       {showActions && (

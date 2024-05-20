@@ -94,7 +94,8 @@ export interface LLMModel {
   display_name: string;
   provider?: string;
   size?: string;
-  precision?: string;
+  quantization?: string;
+  context_length?: string;
   is_default?: boolean;
 }
 
