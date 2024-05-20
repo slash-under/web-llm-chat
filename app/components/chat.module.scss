@@ -752,10 +752,10 @@
   opacity: 0;
 
   transition: all ease 0.2s;
-  cursor: pointer;
 
   display: flex;
   justify-content: center;
+  z-index: -1;
 
   &.show {
     top: -54px;
@@ -772,5 +772,6 @@
     margin-bottom: 20px;
     display: flex;
     align-items: center;
+    cursor: pointer;
   }
 }
