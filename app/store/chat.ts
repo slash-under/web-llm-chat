@@ -3,7 +3,7 @@ import { trimTopic, getMessageTextContent } from "../utils";
 import Locale, { getLang } from "../locales";
 import { showToast } from "../components/ui-lib";
 import { ModelConfig, ModelType, useAppConfig } from "./config";
-import { createEmptyMask, Mask } from "./mask";
+import { createEmptyTemplate, Template } from "./template";
 import {
   DEFAULT_INPUT_TEMPLATE,
   DEFAULT_MODELS,
@@ -62,7 +62,7 @@ export interface ChatSession {
   clearContextIndex?: number;
   isGenerating: boolean;
 
-  mask: Mask;
+  template: Template;
 }
 
 export const DEFAULT_TOPIC = Locale.Store.DefaultTopic;
@@ -86,7 +86,7 @@ function createEmptySession(): ChatSession {
     lastSummarizeIndex: 0,
     isGenerating: false,
 
-    mask: createEmptyMask(),
+    template: createEmptyTemplate(),
   };
 }
 
@@ -184,21 +184,21 @@ export const useChatStore = createPersistStore(
         });
       },
 
-      newSession(mask?: Mask) {
+      newSession(template?: Template) {
         const session = createEmptySession();
 
-        if (mask) {
+        if (template) {
           const config = useAppConfig.getState();
           const globalModelConfig = config.modelConfig;
 
-          session.mask = {
-            ...mask,
+          session.template = {
+            ...template,
             modelConfig: {
               ...globalModelConfig,
-              ...mask.modelConfig,
+              ...template.modelConfig,
             },
           };
-          session.topic = mask.name;
+          session.topic = template.name;
         }
 
         set((state) => ({
@@ -297,7 +297,7 @@ export const useChatStore = createPersistStore(
         attachFiles?: FileInfo[],
       ) {
         const session = get().currentSession();
-        const modelConfig = session.mask.modelConfig;
+        const modelConfig = session.template.modelConfig;
 
         const userContent = fillTemplateWith(content, modelConfig);
         console.log("[User Input] after template: ", userContent);
@@ -519,13 +519,13 @@ export const useChatStore = createPersistStore(
 
       getMessagesWithMemory() {
         const session = get().currentSession();
-        const modelConfig = session.mask.modelConfig;
+        const modelConfig = session.template.modelConfig;
         const clearContextIndex = session.clearContextIndex ?? 0;
         const messages = session.messages.slice();
         const totalMessageCount = session.messages.length;
 
         // in-context prompts
-        const contextPrompts = session.mask.context.slice();
+        const contextPrompts = session.template.context.slice();
 
         // system prompts, to get close to OpenAI Web ChatGPT
         const shouldInjectSystemPrompts = modelConfig.enableInjectSystemPrompts;
@@ -623,7 +623,7 @@ export const useChatStore = createPersistStore(
       summarizeSession(webllm: WebLLMApi) {
         const config = useAppConfig.getState();
         const session = get().currentSession();
-        const modelConfig = session.mask.modelConfig;
+        const modelConfig = session.template.modelConfig;
 
         // remove error messages if any
         const messages = session.messages;
@@ -645,7 +645,7 @@ export const useChatStore = createPersistStore(
           webllm.chat({
             messages: topicMessages,
             config: {
-              model: session.mask.modelConfig.model,
+              model: session.template.modelConfig.model,
               cache: useAppConfig.getState().cacheType,
               stream: false,
             },
@@ -732,7 +732,7 @@ export const useChatStore = createPersistStore(
             config: {
               ...modelcfg,
               stream: true,
-              model: session.mask.modelConfig.model,
+              model: session.template.modelConfig.model,
               cache: useAppConfig.getState().cacheType,
             },
             onUpdate(message) {

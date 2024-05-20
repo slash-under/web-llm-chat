@@ -33,7 +33,7 @@ const en = {
     },
     Commands: {
       new: "Start a new chat",
-      newm: "Start a new chat with mask",
+      newt: "Start a new chat with template",
       next: "Next Chat",
       prev: "Previous Chat",
       clear: "Clear Context",
@@ -48,7 +48,7 @@ const en = {
         dark: "Dark Theme",
       },
       Prompt: "Prompts",
-      Masks: "Masks",
+      Templates: "Templates",
       Clear: "Clear Context",
       Settings: "Settings",
       EnablePlugins: "Enable Plugins",
@@ -70,7 +70,7 @@ const en = {
     StopSpeak: "Stop",
     Config: {
       Reset: "Reset to Default",
-      SaveAs: "Save as Mask",
+      SaveAs: "Save as Template",
     },
     IsContext: "Contextual Prompt",
   },
@@ -87,7 +87,7 @@ const en = {
     },
     IncludeContext: {
       Title: "Including Context",
-      SubTitle: "Export context prompts in mask or not",
+      SubTitle: "Export context prompts in template or not",
     },
     Steps: {
       Select: "Select",
@@ -174,10 +174,10 @@ const en = {
       Title: "Auto Generate Title",
       SubTitle: "Generate a suitable title based on the conversation content",
     },
-    Mask: {
+    Template: {
       Builtin: {
-        Title: "Hide Builtin Masks",
-        SubTitle: "Hide builtin masks in mask list",
+        Title: "Hide Builtin Templates",
+        SubTitle: "Hide builtin templates in template list",
       },
     },
     Prompt: {
@@ -427,8 +427,8 @@ const en = {
   FineTuned: {
     Sysmessage: "You are an assistant that",
   },
-  Mask: {
-    Name: "Mask",
+  Template: {
+    Name: "Template",
     Page: {
       Title: "Prompt Template",
       SubTitle: (count: number) => `${count} prompt templates`,
@@ -462,8 +462,8 @@ const en = {
         SubTitle: "Do not show in-context prompts in chat",
       },
       Share: {
-        Title: "Share This Mask",
-        SubTitle: "Generate a link to this mask",
+        Title: "Share This Template",
+        SubTitle: "Generate a link to this template",
         Action: "Copy Link",
       },
     },
@@ -471,8 +471,8 @@ const en = {
   NewChat: {
     Return: "Return",
     Skip: "Just Start",
-    Title: "Pick a Mask",
-    SubTitle: "Chat with the Soul behind the Mask",
+    Title: "Pick a Template",
+    SubTitle: "Start chat with a template",
     More: "Find More",
     NotShow: "Never Show Again",
     ConfirmNoShow: "Confirm to disable? You can enable it in settings later.",

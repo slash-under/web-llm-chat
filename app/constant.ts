@@ -10,7 +10,7 @@ export enum Path {
   Home = "/",
   Chat = "/chat",
   Settings = "/settings",
-  Masks = "/masks",
+  Templates = "/templates",
   Plugins = "/plugins",
   Auth = "/auth",
 }
@@ -25,7 +25,7 @@ export enum SlotID {
 }
 
 export enum FileName {
-  Masks = "masks.json",
+  Templates = "templates.json",
   Plugins = "plugins.json",
   Prompts = "prompts.json",
 }
@@ -34,7 +34,7 @@ export enum StoreKey {
   Chat = "chat-next-web-store",
   Access = "access-control",
   Config = "app-config",
-  Mask = "mask-store",
+  Templates = "templates-store",
   Plugin = "plugin-store",
   Prompt = "prompt-store",
   Update = "chat-update",
