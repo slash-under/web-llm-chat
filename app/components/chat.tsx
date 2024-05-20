@@ -10,6 +10,7 @@ import React, {
   useContext,
 } from "react";
 
+import ShareIcon from "../icons/share.svg";
 import SendWhiteIcon from "../icons/send-white.svg";
 import VoiceWhiteIcon from "../icons/voice-white.svg";
 import BrainIcon from "../icons/brain.svg";
@@ -1368,6 +1369,16 @@ function _Chat() {
               />
             </div>
           )}
+          <div className="window-action-button">
+            <IconButton
+              icon={<ShareIcon />}
+              bordered
+              title={Locale.Chat.Actions.Share}
+              onClick={() => {
+                copyToClipboard(window.location.href);
+              }}
+            />
+          </div>
           <div className="window-action-button">
             <IconButton
               icon={<ExportIcon />}
