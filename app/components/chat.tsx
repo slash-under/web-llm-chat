@@ -812,7 +812,7 @@ function _Chat() {
     }
   };
 
-  const doSubmit = (userInput: string) => {
+  const onSubmit = (userInput: string) => {
     if (userInput.trim() === "") return;
 
     const matchCommand = chatCommands.match(userInput);
@@ -824,6 +824,7 @@ function _Chat() {
     }
 
     if (isStreaming) return;
+
     setIsLoading(true);
     chatStore
       .onUserInput(userInput, webllm, attachImages)
@@ -884,7 +885,7 @@ function _Chat() {
           }
         }
       });
-      session.messages.filter((m) => m.content.length > 0);
+      session.messages = session.messages.filter((m) => m.content.length > 0);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
     if (isFirefox()) config.sttConfig.engine = FIREFOX_DEFAULT_STT_ENGINE;
@@ -912,7 +913,7 @@ function _Chat() {
       return;
     }
     if (shouldSubmit(e) && promptHints.length === 0) {
-      doSubmit(userInput);
+      onSubmit(userInput);
       e.preventDefault();
     }
   };
@@ -1161,7 +1162,7 @@ function _Chat() {
   useCommand({
     fill: setUserInput,
     submit: (text) => {
-      doSubmit(text);
+      onSubmit(text);
     },
   });
 
@@ -1758,7 +1759,7 @@ function _Chat() {
               text={Locale.Chat.Send}
               className={styles["chat-input-send"]}
               type="primary"
-              onClick={() => doSubmit(userInput)}
+              onClick={() => onSubmit(userInput)}
             />
           )}
         </label>
