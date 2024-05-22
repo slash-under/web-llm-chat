@@ -856,7 +856,7 @@ function _Chat() {
 
   // stop response
   const onUserStop = () => {
-    webllm?.abort();
+    webllm.abort();
     chatStore.stopStreaming();
   };
 
