@@ -103,7 +103,6 @@ import { ContextPrompts, TemplateAvatar, TemplateConfig } from "./template";
 import { ChatCommandPrefix, useChatCommand, useCommand } from "../command";
 import { prettyObject } from "../utils/format";
 import { ExportMessageModal } from "./exporter";
-import { getClientConfig } from "../config/client";
 import { useAllModels } from "../utils/hooks";
 // import { ClientApi } from "../client/api";
 import { createTTSPlayer } from "../utils/audio";
@@ -117,6 +116,60 @@ import { FileInfo } from "../client/platforms/utils";
 
 import { WebLLMContext } from "../client/webllm";
 import { useTemplateStore } from "../store/template";
+
+export function PromptsConfigModel(props: { onClose: () => void }) {
+  const chatStore = useChatStore();
+  const session = chatStore.currentSession();
+  const templateStore = useTemplateStore();
+  const navigate = useNavigate();
+
+  return (
+    <div className="modal-template">
+      <Modal
+        title={Locale.Context.Edit}
+        onClose={() => props.onClose()}
+        actions={[
+          <IconButton
+            key="reset"
+            icon={<ResetIcon />}
+            bordered
+            text={Locale.Chat.Config.Reset}
+            onClick={async () => {
+              if (await showConfirm(Locale.Memory.ResetConfirm)) {
+                chatStore.updateCurrentSession(
+                  (session) => (session.memoryPrompt = ""),
+                );
+              }
+            }}
+          />,
+          <IconButton
+            key="copy"
+            icon={<CopyIcon />}
+            bordered
+            text={Locale.Chat.Config.SaveAs}
+            onClick={() => {
+              navigate(Path.Templates);
+              setTimeout(() => {
+                templateStore.create(session.template);
+              }, 500);
+            }}
+          />,
+        ]}
+      >
+        <TemplateConfig
+          template={session.template}
+          updateTemplate={(updater) => {
+            const template = { ...session.template };
+            updater(template);
+            chatStore.updateCurrentSession(
+              (session) => (session.template = template),
+            );
+          }}
+        ></TemplateConfig>
+      </Modal>
+    </div>
+  );
+}
 
 export function ScrollDownToast(prop: { show: boolean; onclick: () => void }) {
   return (
@@ -489,6 +542,7 @@ export function ChatActions(props: {
   setAttachFiles: (files: FileInfo[]) => void;
   setUploading: (uploading: boolean) => void;
   scrollToBottom: () => void;
+  showPromptSetting: () => void;
   showPromptHints: () => void;
   hitBottom: boolean;
   uploading: boolean;
@@ -561,8 +615,13 @@ export function ChatActions(props: {
         />
       )}
       <ChatAction
+        onClick={props.showPromptSetting}
+        text={Locale.Chat.InputActions.Settings}
+        icon={<EditIcon />}
+      />
+      <ChatAction
         onClick={props.showPromptHints}
-        text={Locale.Chat.InputActions.Prompt}
+        text={Locale.Chat.InputActions.QuickPrompt}
         icon={<PromptIcon />}
       />
       <ChatAction
@@ -744,6 +803,7 @@ function _Chat() {
   const navigate = useNavigate();
   const [attachImages, setAttachImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [showEditPromptModal, setShowEditPromptModal] = useState(false);
   const [attachFiles, setAttachFiles] = useState<FileInfo[]>([]);
   const webllm = useContext(WebLLMContext)!;
 
@@ -1418,6 +1478,14 @@ function _Chat() {
           setAutoScroll(false);
         }}
       >
+        <div className={styles["chat-action-context"]}>
+          <ChatAction
+            text={Locale.Chat.Actions.EditPrompts}
+            icon={<EditIcon />}
+            onClick={() => setShowEditPromptModal(true)}
+            fullWidth
+          />
+        </div>
         {messages.map((message, i) => {
           const isUser = message.role === "user";
           const isContext = i < context.length;
@@ -1685,6 +1753,7 @@ function _Chat() {
           scrollToBottom={scrollToBottom}
           hitBottom={hitBottom}
           uploading={uploading}
+          showPromptSetting={() => setShowEditPromptModal(true)}
           showPromptHints={() => {
             // Click again to close
             if (promptHints.length > 0) {
@@ -1775,6 +1844,10 @@ function _Chat() {
             setIsEditingMessage(false);
           }}
         />
+      )}
+
+      {showEditPromptModal && (
+        <SessionConfigModel onClose={() => setShowEditPromptModal(false)} />
       )}
     </div>
   );
