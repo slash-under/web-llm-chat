@@ -403,7 +403,7 @@ const en = {
   },
   Context: {
     Toast: (x: any) => `With ${x} system prompts`,
-    Edit: "Prompts Settings",
+    Edit: "Conversation Settings",
     Add: "Add a Prompt",
     Clear: "Context Cleared",
     Revert: "Revert",
@@ -460,7 +460,7 @@ const en = {
     },
     Config: {
       Avatar: "Bot Avatar",
-      Name: "Conversation Name",
+      Name: "Prompts Name",
       HideContext: {
         Title: "Hide Context Prompts",
         SubTitle: "Do not show in-context prompts in chat",
